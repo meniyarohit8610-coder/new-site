@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Portal - Encrypted Couple Team Space</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+  <!-- ANIMATED LOVE HEARTS BACKGROUND CANVAS -->
+  <canvas id="loveHeartBg"></canvas>
+
+  <!-- FLOATING HEARTS CONTAINER FOR REAL-TIME LOVE PINGS -->
+  <div id="heartsContainer"></div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="heart-loader"></div>
+    <div id="loadingText" class="loading-text">Connecting to Secure Portal...</div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-card animated-card">
+      <div class="brand-logo">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <h2>Portal Access</h2>
+      <p class="login-subtext">Private Live Couple Team Communication</p>
+      
+      <div class="input-group">
+        <label for="username">
+          <svg class="field-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Username
+        </label>
+        <input type="text" id="username" placeholder="Enter username" autocomplete="off">
+      </div>
+
+      <div class="input-group password-group">
+        <label for="password">
+          <svg class="field-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Password
+        </label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Enter password or master security key">
+          <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('password')" title="Toggle password visibility">
+            <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="forgot-password-row">
+        <a href="#" id="forgotPasswordLink">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Forgot Password?
+        </a>
+      </div>
+
+      <button id="loginBtn" class="btn btn-login">
+        <span>Login to Portal</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <div id="errorMsg" class="error-msg hidden">Invalid credentials.</div>
+      
+      <div class="portal-shield-note">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>End-to-End Encrypted &bull; SQLite Database Protected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="appScreen" class="app-container hidden">
+    <!-- Header -->
+    <header class="app-header animated-header">
+      <div class="user-info-bar">
+        <div class="avatar-upload" onclick="triggerAvatarChange()" title="Click to Change Profile Picture">
+          <img id="userAvatar" src="" alt="Avatar">
+          <span id="partnerStatusDot" class="status-dot offline"></span>
+        </div>
+        <input type="file" id="avatarFileInput" class="hidden" accept="image/*">
+        <div class="user-meta">
+          <div class="name-status-row">
+            <h3 id="displayUsername">admin</h3>
+            <span id="partnerStatusText" class="status-label">Offline</span>
+          </div>
+          <span id="userRoleBadge" class="user-badge">Member</span>
+        </div>
+      </div>
+
+      <!-- LIVE COUPLE TEAM WIDGET -->
+      <div class="couple-team-bar" id="coupleTeamHeaderBar" title="Open Live Couple Team Hub">
+        <div class="couple-avatar-duo">
+          <img id="duoSelfImg" class="duo-img duo-one" src="" alt="You">
+          <img id="duoPartnerImg" class="duo-img duo-two" src="" alt="Partner">
+          <span class="duo-heart-badge heartbeat-icon">💖</span>
+        </div>
+        <div class="couple-team-text">
+          <span class="couple-team-title" id="coupleTeamNameText">admin & user</span>
+          <span class="couple-team-status" id="coupleTeamLiveStatus">1/2 Active</span>
+        </div>
+      </div>
+
+      <div class="header-right-controls">
+        <!-- QUICK LOVE PULSE BUTTON -->
+        <button id="sendLovePingBtn" class="btn-love-pulse" title="Send Floating Hearts to Partner!">
+          <span class="heartbeat-icon">💕</span>
+          <span>Love Ping</span>
+        </button>
+
+        <!-- ONE-CLICK PRIVACY STEALTH TOGGLE -->
+        <button id="privacyModeBtn" class="btn-action-icon tool-btn privacy-toggle-btn" title="One-Click Privacy Mode (Esc)">
+          <svg class="privacy-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg class="privacy-icon-on hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+          <span class="btn-label-desktop">Privacy</span>
+        </button>
+
+        <div class="header-call-starters">
+          <!-- VOICE CALL -->
+          <button id="audioCallBtn" class="btn-action-icon tool-btn" title="Start Voice Call">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            <span class="btn-label-desktop">Audio Call</span>
+          </button>
+          
+          <!-- VIDEO CALL -->
+          <button id="videoCallBtn" class="btn-action-icon tool-btn" title="Start Video Call">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <span class="btn-label-desktop">Video Call</span>
+          </button>
+        </div>
+
+        <div class="dropdown">
+          <button id="menuBtn" class="btn-icon" title="Menu Options">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+          </button>
+          <div id="dropdownMenu" class="dropdown-content hidden">
+            <button id="openCoupleHubOption">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              Live Couple Team Hub
+            </button>
+            <button id="privacyMenuOption" onclick="togglePrivacyMode()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              One-Click Privacy Mode (Esc)
+            </button>
+            <button id="editProfileOption">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Profile & Avatar
+            </button>
+            <button id="changeCredsOption">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Account Credentials
+            </button>
+            <button id="clearChatOption">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Clear Chat History
+            </button>
+            <button id="callHistoryOption">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              View Call History
+            </button>
+            <button id="logoutOption" onclick="handleLogout()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ONE-CLICK STEALTH PRIVACY BANNER -->
+    <div id="privacyBanner" class="privacy-stealth-banner hidden" onclick="togglePrivacyMode()" title="Click to Resume View">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <span class="privacy-stealth-text">Stealth Privacy Mode Active</span>
+      <span class="privacy-stealth-badge">Click or Press Esc to Resume</span>
+    </div>
+
+    <!-- FULL INTERACTIVE CALL OVERLAY -->
+    <div id="videoContainer" class="video-container hidden animated-call-screen">
+      <div class="big-video-wrapper">
+        <video id="mainVideo" autoplay playsinline></video>
+        <span class="video-label" id="mainVideoLabel">Partner</span>
+      </div>
+
+      <div id="pipVideoWrapper" class="pip-video-wrapper" title="Click to Swap Stream Views">
+        <video id="pipVideo" autoplay playsinline muted></video>
+        <span class="video-label" id="pipVideoLabel">You</span>
+      </div>
+
+      <div class="floating-call-controls">
+        <!-- 1. MIC TOGGLE -->
+        <button id="toggleMicBtn" class="call-control-btn" title="Toggle Microphone Mute/Unmute">
+          <div class="control-icon-wrapper">
+            <svg class="icon-mic-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <svg class="icon-mic-off hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
+          <span id="micBtnText" class="control-btn-label">Mic On</span>
+        </button>
+
+        <!-- 2. CAMERA TOGGLE -->
+        <button id="toggleCamBtn" class="call-control-btn" title="Toggle Camera On/Off">
+          <div class="control-icon-wrapper">
+            <svg class="icon-cam-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <svg class="icon-cam-off hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M21 21l-4.35-4.35M23 7l-7 5 7 5V7z"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+          </div>
+          <span id="camBtnText" class="control-btn-label">Cam On</span>
+        </button>
+
+        <!-- 3. SWITCH CALL MODE -->
+        <button id="switchCallModeBtn" class="call-control-btn" title="Switch between Video & Voice Call">
+          <div class="control-icon-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17 1 21 5 17 9"/>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7 23 3 19 7 15"/>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+          </div>
+          <span id="callModeBtnText" class="control-btn-label">To Voice Call</span>
+        </button>
+
+        <!-- 4. SPEAKER TOGGLE -->
+        <button id="toggleSpeakerBtn" class="call-control-btn" onclick="toggleSpeakerOutput()" title="Toggle Ear/Loud Speaker">
+          <div class="control-icon-wrapper">
+            <svg class="icon-ear-speaker" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <svg class="icon-loud-speaker hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          </div>
+          <span id="speakerBtnText" class="control-btn-label">Ear Speaker</span>
+        </button>
+
+        <!-- 5. END CALL -->
+        <button id="endCallBtn" class="call-control-btn btn-end-call" title="End Call">
+          <div class="control-icon-wrapper">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </div>
+          <span class="control-btn-label">End Call</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CHAT SECTION -->
+    <div class="chat-container">
+      <div id="chatBox" class="chat-box"></div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <label for="mediaInput" class="btn-attach icon-tooltip" title="Attach Photos or Videos">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="field-label-text">Media</span>
+        </label>
+        <input type="file" id="mediaInput" accept="image/*,video/*" class="hidden">
+        
+        <button id="recordAudioBtn" class="btn-record icon-tooltip" title="Record Voice Note">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <span class="field-label-text">Voice</span>
+        </button>
+        
+        <div class="message-input-wrapper">
+          <input type="text" id="messageInput" placeholder="Type a romantic encrypted message..." autocomplete="off">
+        </div>
+
+        <!-- QUICK LOVE HEART BUTTON -->
+        <button id="quickHeartBtn" class="btn-quick-heart" title="Send Animated Love Heart (Double-tap any bubble to react!)">
+          <span class="heartbeat-icon">❤️</span>
+        </button>
+
+        <button id="sendBtn" class="btn btn-send">
+          <span>Send</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE COUPLE TEAM HUB MODAL -->
+  <div id="coupleHubModal" class="modal hidden">
+    <div class="modal-content animated-modal">
+      <div class="modal-header">
+        <h3>
+          <span class="heartbeat-icon">💕</span>
+          Live Couple Team Hub
+        </h3>
+        <button id="closeCoupleHubModal" class="btn-icon">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="couple-counter-box">
+          <div class="counter-days-text" id="daysTogetherCount">140 Days</div>
+          <div class="counter-subtext" id="togetherSubtext">Together in Love ❤️</div>
+        </div>
+
+        <div class="input-group">
+          <label>Our Couple Name</label>
+          <input type="text" id="coupleTeamNameInput" placeholder="Enter couple title (e.g. King & Queen)">
+        </div>
+
+        <div class="input-group">
+          <label>Anniversary / Start Date</label>
+          <input type="date" id="coupleAnniversaryInput">
+        </div>
+
+        <div class="input-group">
+          <label>Set Your Live Mood</label>
+          <div class="mood-selector-row">
+            <button class="mood-btn" onclick="selectMood('🥰 In Love')">🥰 In Love</button>
+            <button class="mood-btn" onclick="selectMood('💖 Missing You')">💖 Missing You</button>
+            <button class="mood-btn" onclick="selectMood('☕ Working')">☕ Working</button>
+            <button class="mood-btn" onclick="selectMood('😴 Sleepy')">😴 Sleepy</button>
+            <button class="mood-btn" onclick="selectMood('🥳 Excited')">🥳 Excited</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Shared Couple Scratchpad / Live Note</label>
+          <textarea id="sharedLoveNoteInput" class="shared-love-memo" placeholder="Leave a sweet note for your partner..."></textarea>
+        </div>
+
+        <button id="saveCoupleHubBtn" class="btn btn-login">Save Couple Team Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE MODAL -->
+  <div id="editProfileModal" class="modal hidden">
+    <div class="modal-content animated-modal">
+      <div class="modal-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Edit Profile
+        </h3>
+        <button id="closeProfileModal" class="btn-icon">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="editNameInput">Display Name</label>
+          <input type="text" id="editNameInput" placeholder="Enter display name">
+        </div>
+        <div class="input-group">
+          <label for="editAvatarInput">Profile Picture File</label>
+          <input type="file" id="editAvatarInput" accept="image/*">
+        </div>
+        <button id="saveProfileBtn" class="btn btn-login">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT SETTINGS MODAL -->
+  <div id="changeCredsModal" class="modal hidden">
+    <div class="modal-content animated-modal">
+      <div class="modal-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Account Credentials
+        </h3>
+        <button id="closeCredsModal" class="btn-icon">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group password-group">
+          <label for="masterKeyInput">Master Security PIN</label>
+          <div class="password-wrapper">
+            <input type="password" id="masterKeyInput" placeholder="Enter master security PIN">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('masterKeyInput')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="newUsernameInput">New Username</label>
+          <input type="text" id="newUsernameInput" placeholder="New username" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label for="confirmUsernameInput">Confirm New Username</label>
+          <input type="text" id="confirmUsernameInput" placeholder="Confirm new username" autocomplete="off">
+        </div>
+        <div class="input-group password-group">
+          <label for="newPasswordInput">New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="newPasswordInput" placeholder="New password">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('newPasswordInput')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-group password-group">
+          <label for="confirmPasswordInput">Confirm New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="confirmPasswordInput" placeholder="Confirm new password">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('confirmPasswordInput')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button id="saveCredsBtn" class="btn btn-login">Update Credentials</button>
+        <div id="credsErrorMsg" class="error-msg hidden">Incorrect Master PIN or mismatch! Access Denied.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div id="forgotPasswordModal" class="modal hidden">
+    <div class="modal-content animated-modal">
+      <div class="modal-header">
+        <h3>Reset Account Credentials</h3>
+        <button id="closeForgotModal" class="btn-icon">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group password-group">
+          <label for="forgotMasterPin">Master Security PIN</label>
+          <div class="password-wrapper">
+            <input type="password" id="forgotMasterPin" placeholder="Enter master security PIN">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('forgotMasterPin')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="forgotTargetUser">Account to Reset</label>
+          <select id="forgotTargetUser" class="styled-select">
+            <option value="admin">Admin Account</option>
+            <option value="user">User Account</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="forgotNewUsername">New Username</label>
+          <input type="text" id="forgotNewUsername" placeholder="New username" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label for="forgotConfirmUsername">Confirm New Username</label>
+          <input type="text" id="forgotConfirmUsername" placeholder="Confirm new username" autocomplete="off">
+        </div>
+        <div class="input-group password-group">
+          <label for="forgotNewPassword">New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="forgotNewPassword" placeholder="New password">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('forgotNewPassword')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-group password-group">
+          <label for="forgotConfirmPassword">Confirm New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="forgotConfirmPassword" placeholder="Confirm new password">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('forgotConfirmPassword')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button id="saveForgotBtn" class="btn btn-login">Reset & Update Account</button>
+        <div id="forgotErrorMsg" class="error-msg hidden">Invalid Master PIN or username/password mismatch!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALL HISTORY MODAL -->
+  <div id="callHistoryModal" class="modal hidden">
+    <div class="modal-content animated-modal">
+      <div class="modal-header">
+        <h3>Call History</h3>
+        <button id="closeModalBtn" class="btn-icon">&times;</button>
+      </div>
+      <div id="callHistoryList" class="modal-body">
+        <p class="empty-history">No calls logged yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY UNLOCK PASSWORD MODAL -->
+  <div id="privacyUnlockModal" class="modal hidden">
+    <div class="modal-content animated-modal">
+      <div class="modal-body" style="padding: 30px 26px; text-align: center;">
+        <div class="privacy-lock-icon-wrap">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h3 class="privacy-unlock-title">Unlock Portal Session</h3>
+        <p class="privacy-unlock-subtext">Enter account password for <strong id="privacyUnlockUsername">user</strong> to resume view.</p>
+        
+        <div class="input-group password-group" style="text-align: left; margin-bottom: 16px;">
+          <div class="password-wrapper">
+            <input type="password" id="privacyUnlockPassword" placeholder="Enter account password">
+            <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('privacyUnlockPassword')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="privacyUnlockError" class="error-msg hidden" style="margin-top: 0; margin-bottom: 16px;">Incorrect account password!</div>
+
+        <div class="privacy-unlock-actions">
+          <button type="button" id="cancelPrivacyUnlockBtn" class="btn-secondary">Stay Hidden</button>
+          <button type="button" id="confirmPrivacyUnlockBtn" class="btn btn-login" style="flex: 1;">Unlock</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC (CLIENT + BACKEND SQLITE SYNC) -->
+  <script>
+    // Server API base URL
+    const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : 'http://localhost:8080';
+
+    // Fallback users for standalone offline mode
+    function getStoredUsers() {
+      const stored = localStorage.getItem('portal_users');
+      if (stored) return JSON.parse(stored);
+      return {
+        admin: { password: "adminpassword123", role: "Admin", targetPeer: "user" },
+        user:  { password: "userpassword123",  role: "User",  targetPeer: "admin" }
+      };
+    }
+
+    let USERS = getStoredUsers();
+    let currentUser = null;
+    let peer = null;
+    let activeDataConn = null;
+    let activeCall = null;
+    let localStream = null;
+    let remoteStreamRef = null;
+    let callStartTime = null;
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
+    let isMicMuted = false;
+    let isCamOff = false;
+    let isLoudSpeaker = false;
+    let isVideoCallActive = false;
+    let isMainRemote = true;
+    let profilePicUrl = '';
+    let displayName = '';
+    let userMood = '🥰 In Love';
+    let heartbeatInterval = null;
+    let lastPingTime = 0;
+
+    // Couple Team State
+    let coupleTeamData = {
+      couple_name: "admin & user",
+      anniversary_date: "2024-01-01",
+      shared_note: "Welcome to our private space ❤️ Forever and always.",
+      love_ping_count: 0
+    };
+
+    // DOM Elements
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loginScreen = document.getElementById('loginScreen');
+    const appScreen = document.getElementById('appScreen');
+    const loginBtn = document.getElementById('loginBtn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const errorMsg = document.getElementById('errorMsg');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+    const displayUsername = document.getElementById('displayUsername');
+    const userAvatar = document.getElementById('userAvatar');
+    const partnerStatusDot = document.getElementById('partnerStatusDot');
+    const partnerStatusText = document.getElementById('partnerStatusText');
+
+    const duoSelfImg = document.getElementById('duoSelfImg');
+    const duoPartnerImg = document.getElementById('duoPartnerImg');
+    const coupleTeamHeaderBar = document.getElementById('coupleTeamHeaderBar');
+    const coupleTeamNameText = document.getElementById('coupleTeamNameText');
+    const coupleTeamLiveStatus = document.getElementById('coupleTeamLiveStatus');
+    const sendLovePingBtn = document.getElementById('sendLovePingBtn');
+    const heartsContainer = document.getElementById('heartsContainer');
+
+    const coupleHubModal = document.getElementById('coupleHubModal');
+    const closeCoupleHubModal = document.getElementById('closeCoupleHubModal');
+    const openCoupleHubOption = document.getElementById('openCoupleHubOption');
+    const coupleTeamNameInput = document.getElementById('coupleTeamNameInput');
+    const coupleAnniversaryInput = document.getElementById('coupleAnniversaryInput');
+    const sharedLoveNoteInput = document.getElementById('sharedLoveNoteInput');
+    const daysTogetherCount = document.getElementById('daysTogetherCount');
+    const saveCoupleHubBtn = document.getElementById('saveCoupleHubBtn');
+
+    const messageInput = document.getElementById('messageInput');
+    const mediaInput = document.getElementById('mediaInput');
+    const recordAudioBtn = document.getElementById('recordAudioBtn');
+    const quickHeartBtn = document.getElementById('quickHeartBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatBox = document.getElementById('chatBox');
+
+    const audioCallBtn = document.getElementById('audioCallBtn');
+    const videoCallBtn = document.getElementById('videoCallBtn');
+    const toggleMicBtn = document.getElementById('toggleMicBtn');
+    const toggleCamBtn = document.getElementById('toggleCamBtn');
+    const switchCallModeBtn = document.getElementById('switchCallModeBtn');
+    const endCallBtn = document.getElementById('endCallBtn');
+
+    const videoContainer = document.getElementById('videoContainer');
+    const mainVideo = document.getElementById('mainVideo');
+    const pipVideo = document.getElementById('pipVideo');
+    const pipVideoWrapper = document.getElementById('pipVideoWrapper');
+    const mainVideoLabel = document.getElementById('mainVideoLabel');
+    const pipVideoLabel = document.getElementById('pipVideoLabel');
+
+    const menuBtn = document.getElementById('menuBtn');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const editProfileOption = document.getElementById('editProfileOption');
+    const changeCredsOption = document.getElementById('changeCredsOption');
+    const clearChatOption = document.getElementById('clearChatOption');
+    const callHistoryOption = document.getElementById('callHistoryOption');
+
+    const editProfileModal = document.getElementById('editProfileModal');
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    const editNameInput = document.getElementById('editNameInput');
+    const editAvatarInput = document.getElementById('editAvatarInput');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+
+    const changeCredsModal = document.getElementById('changeCredsModal');
+    const closeCredsModal = document.getElementById('closeCredsModal');
+    const masterKeyInput = document.getElementById('masterKeyInput');
+    const newUsernameInput = document.getElementById('newUsernameInput');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const saveCredsBtn = document.getElementById('saveCredsBtn');
+    const credsErrorMsg = document.getElementById('credsErrorMsg');
+
+    const callHistoryModal = document.getElementById('callHistoryModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const callHistoryList = document.getElementById('callHistoryList');
+
+    function showLoader(txt) {
+      if (txt) document.getElementById('loadingText').textContent = txt;
+      loadingOverlay.classList.remove('hidden');
+    }
+    function hideLoader() { loadingOverlay.classList.add('hidden'); }
+
+    // ==================== ONE-CLICK PRIVACY MODE WITH PASSWORD UNLOCK ====================
+    let isPrivacyActive = false;
+    const privacyModeBtn = document.getElementById('privacyModeBtn');
+    const privacyBanner = document.getElementById('privacyBanner');
+    const privacyUnlockModal = document.getElementById('privacyUnlockModal');
+    const privacyUnlockUsername = document.getElementById('privacyUnlockUsername');
+    const privacyUnlockPassword = document.getElementById('privacyUnlockPassword');
+    const privacyUnlockError = document.getElementById('privacyUnlockError');
+    const cancelPrivacyUnlockBtn = document.getElementById('cancelPrivacyUnlockBtn');
+    const confirmPrivacyUnlockBtn = document.getElementById('confirmPrivacyUnlockBtn');
+    const originalDocTitle = document.title;
+
+    function activatePrivacyMode() {
+      isPrivacyActive = true;
+      document.body.classList.add('privacy-active');
+
+      const iconOff = document.querySelector('.privacy-icon-off');
+      const iconOn = document.querySelector('.privacy-icon-on');
+      if (iconOff) iconOff.classList.add('hidden');
+      if (iconOn) iconOn.classList.remove('hidden');
+      if (privacyBanner) privacyBanner.classList.remove('hidden');
+      document.title = "Work Notes & Project Tasks";
+    }
+
+    function openPrivacyUnlockPrompt() {
+      if (!isPrivacyActive) return;
+      const uname = (currentUser && currentUser.username) ? currentUser.username : 'user';
+      if (privacyUnlockUsername) privacyUnlockUsername.textContent = uname;
+      if (privacyUnlockPassword) privacyUnlockPassword.value = '';
+      if (privacyUnlockError) privacyUnlockError.classList.add('hidden');
+      if (privacyUnlockModal) {
+        privacyUnlockModal.classList.remove('hidden');
+        setTimeout(() => {
+          if (privacyUnlockPassword) privacyUnlockPassword.focus();
+        }, 120);
+      }
+    }
+
+    function closePrivacyUnlockPrompt() {
+      if (privacyUnlockModal) privacyUnlockModal.classList.add('hidden');
+      if (privacyUnlockPassword) privacyUnlockPassword.value = '';
+      if (privacyUnlockError) privacyUnlockError.classList.add('hidden');
+    }
+
+    async function verifyAccountPassword(enteredPassword) {
+      if (!enteredPassword) return false;
+      const uname = (currentUser && currentUser.username) ? currentUser.username : 'user';
+
+      // 1. Check in-memory currentUser password
+      if (currentUser && currentUser.password && enteredPassword === currentUser.password) {
+        return true;
+      }
+
+      // 2. Check local fallback users
+      const users = getStoredUsers();
+      if (users[uname] && users[uname].password === enteredPassword) {
+        return true;
+      }
+
+      // 3. Verify via backend SQLite /api/login
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uname, password: enteredPassword })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (currentUser && data.user && data.user.password) {
+            currentUser.password = data.user.password;
+          }
+          return true;
+        }
+      } catch (err) {
+        console.warn('API verification fallback error:', err);
+      }
+
+      return false;
+    }
+
+    async function handlePrivacyUnlock() {
+      const entered = privacyUnlockPassword ? privacyUnlockPassword.value.trim() : '';
+      const uname = (currentUser && currentUser.username) ? currentUser.username : 'user';
+
+      if (!entered) {
+        if (privacyUnlockError) {
+          privacyUnlockError.textContent = `Please enter the account password for ${uname}.`;
+          privacyUnlockError.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const isValid = await verifyAccountPassword(entered);
+      if (isValid) {
+        // Correct password -> end privacy mode
+        isPrivacyActive = false;
+        document.body.classList.remove('privacy-active');
+
+        const iconOff = document.querySelector('.privacy-icon-off');
+        const iconOn = document.querySelector('.privacy-icon-on');
+        if (iconOff) iconOff.classList.remove('hidden');
+        if (iconOn) iconOn.classList.add('hidden');
+        if (privacyBanner) privacyBanner.classList.add('hidden');
+        document.title = originalDocTitle;
+
+        closePrivacyUnlockPrompt();
+      } else {
+        if (privacyUnlockError) {
+          privacyUnlockError.textContent = `Incorrect account password for ${uname}!`;
+          privacyUnlockError.classList.remove('hidden');
+        }
+        if (privacyUnlockPassword) {
+          privacyUnlockPassword.select();
+        }
+      }
+    }
+
+    function togglePrivacyMode() {
+      if (!isPrivacyActive) {
+        activatePrivacyMode();
+      } else {
+        openPrivacyUnlockPrompt();
+      }
+    }
+
+    if (privacyModeBtn) {
+      privacyModeBtn.addEventListener('click', togglePrivacyMode);
+    }
+
+    if (confirmPrivacyUnlockBtn) {
+      confirmPrivacyUnlockBtn.addEventListener('click', handlePrivacyUnlock);
+    }
+
+    if (cancelPrivacyUnlockBtn) {
+      cancelPrivacyUnlockBtn.addEventListener('click', closePrivacyUnlockPrompt);
+    }
+
+    if (privacyUnlockPassword) {
+      privacyUnlockPassword.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handlePrivacyUnlock();
+      });
+    }
+
+    // Keyboard shortcut: Press Escape to toggle privacy stealth mode immediately
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (privacyUnlockModal && !privacyUnlockModal.classList.contains('hidden')) {
+          closePrivacyUnlockPrompt();
+          return;
+        }
+        const openModal = document.querySelector('.modal:not(.hidden)');
+        if (openModal && !isPrivacyActive) {
+          openModal.classList.add('hidden');
+          return;
+        }
+        togglePrivacyMode();
+      }
+    });
+
+    // ==================== ANIMATED LOVE HEART BACKGROUND CANVAS ====================
+    function initLoveHeartBackground() {
+      const canvas = document.getElementById('loveHeartBg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const heartColors = [
+        'rgba(255, 45, 96, 0.45)',
+        'rgba(236, 72, 153, 0.4)',
+        'rgba(224, 37, 195, 0.35)',
+        'rgba(251, 113, 133, 0.42)',
+        'rgba(139, 92, 246, 0.32)'
+      ];
+
+      class FloatingHeart {
+        constructor() {
+          this.reset(true);
+        }
+
+        reset(initial = false) {
+          this.x = Math.random() * width;
+          this.y = initial ? Math.random() * height : height + 25 + Math.random() * 40;
+          this.size = Math.random() * 15 + 10;
+          this.speedY = Math.random() * 0.65 + 0.35;
+          this.speedX = (Math.random() - 0.5) * 0.4;
+          this.swayAmp = Math.random() * 1.6 + 0.8;
+          this.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+          this.opacity = Math.random() * 0.45 + 0.22;
+          this.angle = (Math.random() - 0.5) * 0.3;
+          this.pulse = Math.random() * Math.PI;
+        }
+
+        update() {
+          this.y -= this.speedY;
+          this.pulse += 0.025;
+          this.x += Math.sin(this.pulse) * this.swayAmp + this.speedX;
+
+          if (this.y < -35) {
+            this.reset(false);
+          }
+        }
+
+        draw() {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle + Math.sin(this.pulse * 0.5) * 0.08);
+          ctx.globalAlpha = this.opacity;
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 14;
+
+          ctx.beginPath();
+          const s = this.size;
+          const topCurveHeight = s * 0.3;
+          ctx.moveTo(0, topCurveHeight);
+          ctx.bezierCurveTo(-s / 2, -s / 2, -s, topCurveHeight / 3, 0, s);
+          ctx.bezierCurveTo(s, topCurveHeight / 3, s / 2, -s / 2, 0, topCurveHeight);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      const heartCount = Math.min(Math.floor((width * height) / 28000) + 18, 55);
+      const hearts = [];
+      for (let i = 0; i < heartCount; i++) {
+        hearts.push(new FloatingHeart());
+      }
+
+      // Interactive micro-burst on click/tap
+      window.addEventListener('click', (e) => {
+        if (['BUTTON', 'INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+        for (let i = 0; i < 4; i++) {
+          const h = new FloatingHeart();
+          h.x = e.clientX + (Math.random() - 0.5) * 20;
+          h.y = e.clientY + (Math.random() - 0.5) * 20;
+          h.speedY = Math.random() * 1.2 + 0.8;
+          h.opacity = 0.65;
+          hearts.push(h);
+          if (hearts.length > 70) hearts.shift();
+        }
+      });
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < hearts.length; i++) {
+          hearts[i].update();
+          hearts[i].draw();
+        }
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    // ==================== AUTHENTICATION & LOGIN ====================
+    loginBtn.addEventListener('click', handleLogin);
+    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+
+    async function handleLogin() {
+      const uname = usernameInput.value.trim().toLowerCase();
+      const pwd = passwordInput.value.trim();
+
+      if (!uname || !pwd) {
+        errorMsg.textContent = 'Please enter both username and password.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      showLoader('Authenticating with SQLite Database...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uname, password: pwd })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          currentUser = data.user;
+          completeLoginUI();
+          return;
+        }
+      } catch (err) {
+        console.warn('Backend server not directly reachable, using local cache:', err);
+      }
+
+      // Standalone Fallback
+      USERS = getStoredUsers();
+      if (USERS[uname] && USERS[uname].password === pwd) {
+        currentUser = { username: uname, ...USERS[uname] };
+        completeLoginUI();
+      } else {
+        hideLoader();
+        errorMsg.textContent = 'Invalid username or password.';
+        errorMsg.classList.remove('hidden');
+      }
+    }
+
+    function completeLoginUI() {
+      loginScreen.classList.add('hidden');
+      appScreen.classList.remove('hidden');
+      userRoleBadge.textContent = currentUser.role || 'Member';
+
+      displayName = currentUser.displayName || localStorage.getItem('display_name_' + currentUser.username) || currentUser.username;
+      displayUsername.textContent = displayName;
+
+      profilePicUrl = currentUser.avatar || localStorage.getItem('profile_pic_' + currentUser.username) || 
+                      `https://ui-avatars.com/api/?name=${currentUser.username}&background=ff2d60&color=fff&bold=true`;
+      userAvatar.src = profilePicUrl;
+      duoSelfImg.src = profilePicUrl;
+      duoPartnerImg.src = `https://ui-avatars.com/api/?name=${currentUser.targetPeer}&background=8b5cf6&color=fff&bold=true`;
+
+      initializePeer();
+      loadChatHistory();
+      loadCoupleTeamData();
+      setTimeout(hideLoader, 400);
+    }
+
+    function handleLogout() {
+      if (peer) peer.destroy();
+      currentUser = null;
+      appScreen.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      errorMsg.classList.add('hidden');
+    }
+
+    // ==================== LIVE COUPLE TEAM FEATURES ====================
+    coupleTeamHeaderBar.addEventListener('click', openCoupleHub);
+    openCoupleHubOption.addEventListener('click', () => {
+      openCoupleHub();
+      dropdownMenu.classList.add('hidden');
+    });
+    closeCoupleHubModal.addEventListener('click', () => coupleHubModal.classList.add('hidden'));
+
+    function openCoupleHub() {
+      coupleTeamNameInput.value = coupleTeamData.couple_name || "admin & user";
+      coupleAnniversaryInput.value = coupleTeamData.anniversary_date || "2024-01-01";
+      sharedLoveNoteInput.value = coupleTeamData.shared_note || "";
+      calculateDaysTogether(coupleAnniversaryInput.value);
+      coupleHubModal.classList.remove('hidden');
+    }
+
+    coupleAnniversaryInput.addEventListener('change', (e) => {
+      calculateDaysTogether(e.target.value);
+    });
+
+    function calculateDaysTogether(dateStr) {
+      if (!dateStr) return;
+      const start = new Date(dateStr);
+      const now = new Date();
+      const diffTime = Math.abs(now - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      daysTogetherCount.textContent = `${diffDays} Days`;
+      document.getElementById('togetherSubtext').textContent = `In Love Since ${start.toLocaleDateString()} ❤️`;
+    }
+
+    async function loadCoupleTeamData() {
+      try {
+        const res = await fetch(`${API_BASE}/api/couple-team`);
+        const data = await res.json();
+        if (data.success && data.couple_team) {
+          coupleTeamData = { ...coupleTeamData, ...data.couple_team };
+          coupleTeamNameText.textContent = coupleTeamData.couple_name || "admin & user";
+          calculateDaysTogether(coupleTeamData.anniversary_date);
+          if (coupleTeamData.users && coupleTeamData.users[currentUser.targetPeer]) {
+            const partnerInfo = coupleTeamData.users[currentUser.targetPeer];
+            if (partnerInfo.avatar) duoPartnerImg.src = partnerInfo.avatar;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch couple team data from SQLite backend:', e);
+      }
+    }
+
+    saveCoupleHubBtn.addEventListener('click', async () => {
+      const cname = coupleTeamNameInput.value.trim() || "admin & user";
+      const anniv = coupleAnniversaryInput.value || "2024-01-01";
+      const note = sharedLoveNoteInput.value.trim();
+
+      coupleTeamData.couple_name = cname;
+      coupleTeamData.anniversary_date = anniv;
+      coupleTeamData.shared_note = note;
+      coupleTeamNameText.textContent = cname;
+
+      // Save to SQLite
+      try {
+        await fetch(`${API_BASE}/api/couple-team`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ couple_name: cname, anniversary_date: anniv, shared_note: note })
+        });
+      } catch (e) {}
+
+      // Sync via Peer
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'sync-couple-team', data: coupleTeamData });
+      }
+
+      alert("Couple Team settings saved successfully!");
+      coupleHubModal.classList.add('hidden');
+    });
+
+    function selectMood(mood) {
+      userMood = mood;
+      document.querySelectorAll('.mood-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.includes(mood));
+      });
+
+      // Update backend & sync with partner
+      fetch(`${API_BASE}/api/update-profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUser.username, mood: userMood })
+      }).catch(() => {});
+
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'sync-mood', mood: userMood, user: currentUser.username });
+      }
+      triggerHeartsBurst(12);
+    }
+
+    // LOVE PINGS (Real-time floating heart animations)
+    sendLovePingBtn.addEventListener('click', triggerLovePing);
+
+    async function triggerLovePing() {
+      triggerHeartsBurst(20);
+
+      try {
+        fetch(`${API_BASE}/api/couple-team`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'love-ping', sender: currentUser.username })
+        });
+      } catch (e) {}
+
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'love-ping', sender: displayName });
+      }
+    }
+
+    function triggerHeartsBurst(count = 15) {
+      const emojis = ['💖', '💕', '❤️', '🥰', '💗', '💓', '✨'];
+      for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        heart.style.left = `${Math.random() * 90 + 5}%`;
+        heart.style.animationDuration = `${Math.random() * 1.5 + 2}s`;
+        heart.style.fontSize = `${Math.random() * 18 + 20}px`;
+        heartsContainer.appendChild(heart);
+        setTimeout(() => heart.remove(), 3200);
+      }
+    }
+
+    // Spawn an animated reaction heart from a message bubble
+    function spawnMessageHeart(element) {
+      const heart = document.createElement('span');
+      heart.className = 'msg-reaction-heart';
+      heart.textContent = '❤️';
+      element.style.position = 'relative';
+      element.appendChild(heart);
+      setTimeout(() => heart.remove(), 1100);
+    }
+
+    // ==================== ACCOUNT CREDENTIALS (PROTECTED MASTER PIN) ====================
+    changeCredsOption.addEventListener('click', () => {
+      masterKeyInput.value = '';
+      newUsernameInput.value = currentUser.username;
+      newPasswordInput.value = '';
+      document.getElementById('confirmUsernameInput').value = currentUser.username;
+      document.getElementById('confirmPasswordInput').value = '';
+      credsErrorMsg.classList.add('hidden');
+      changeCredsModal.classList.remove('hidden');
+      dropdownMenu.classList.add('hidden');
+    });
+
+    closeCredsModal.addEventListener('click', () => changeCredsModal.classList.add('hidden'));
+
+    saveCredsBtn.addEventListener('click', async () => {
+      const pin = masterKeyInput.value.trim();
+      const newUname = newUsernameInput.value.trim().toLowerCase();
+      const confUname = document.getElementById('confirmUsernameInput').value.trim().toLowerCase();
+      const newPwd = newPasswordInput.value.trim();
+      const confPwd = document.getElementById('confirmPasswordInput').value.trim();
+
+      if (!pin) {
+        credsErrorMsg.textContent = 'Please enter your Master Security PIN.';
+        credsErrorMsg.classList.remove('hidden');
+        return;
+      }
+      if (newUname !== confUname) {
+        credsErrorMsg.textContent = 'Usernames do not match!';
+        credsErrorMsg.classList.remove('hidden');
+        return;
+      }
+      if (newPwd !== confPwd || !newPwd) {
+        credsErrorMsg.textContent = 'Passwords do not match or are empty!';
+        credsErrorMsg.classList.remove('hidden');
+        return;
+      }
+
+      showLoader('Verifying Master Security PIN in SQLite...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/reset-credentials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            master_pin: pin,
+            target_user: currentUser.username,
+            new_username: newUname,
+            new_password: newPwd
+          })
+        });
+        const data = await res.json();
+        hideLoader();
+
+        if (res.ok && data.success) {
+          currentUser.username = newUname;
+          alert("Account credentials updated successfully!");
+          changeCredsModal.classList.add('hidden');
+          return;
+        } else {
+          credsErrorMsg.textContent = data.error || 'Incorrect Master Security PIN! Access Denied.';
+          credsErrorMsg.classList.remove('hidden');
+          return;
+        }
+      } catch (err) {
+        hideLoader();
+        credsErrorMsg.textContent = 'Could not contact database server. Please ensure python server.py is running.';
+        credsErrorMsg.classList.remove('hidden');
+      }
+    });
+
+    // ==================== FORGOT PASSWORD ====================
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+    const closeForgotModal = document.getElementById('closeForgotModal');
+    const saveForgotBtn = document.getElementById('saveForgotBtn');
+    const forgotMasterPin = document.getElementById('forgotMasterPin');
+    const forgotTargetUser = document.getElementById('forgotTargetUser');
+    const forgotNewUsername = document.getElementById('forgotNewUsername');
+    const forgotConfirmUsername = document.getElementById('forgotConfirmUsername');
+    const forgotNewPassword = document.getElementById('forgotNewPassword');
+    const forgotConfirmPassword = document.getElementById('forgotConfirmPassword');
+    const forgotErrorMsg = document.getElementById('forgotErrorMsg');
+
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotMasterPin.value = '';
+      forgotNewUsername.value = '';
+      forgotConfirmUsername.value = '';
+      forgotNewPassword.value = '';
+      forgotConfirmPassword.value = '';
+      forgotErrorMsg.classList.add('hidden');
+      forgotPasswordModal.classList.remove('hidden');
+    });
+
+    closeForgotModal.addEventListener('click', () => forgotPasswordModal.classList.add('hidden'));
+
+    saveForgotBtn.addEventListener('click', async () => {
+      const pin = forgotMasterPin.value.trim();
+      const newUname = forgotNewUsername.value.trim().toLowerCase();
+      const confUname = forgotConfirmUsername.value.trim().toLowerCase();
+      const newPwd = forgotNewPassword.value.trim();
+      const confPwd = forgotConfirmPassword.value.trim();
+      const targetRole = forgotTargetUser.value;
+
+      if (!pin) {
+        forgotErrorMsg.textContent = 'Please enter your Master Security PIN.';
+        forgotErrorMsg.classList.remove('hidden');
+        return;
+      }
+      if (newUname !== confUname || !newUname) {
+        forgotErrorMsg.textContent = 'Usernames do not match or are empty!';
+        forgotErrorMsg.classList.remove('hidden');
+        return;
+      }
+      if (newPwd !== confPwd || !newPwd) {
+        forgotErrorMsg.textContent = 'Passwords do not match or are empty!';
+        forgotErrorMsg.classList.remove('hidden');
+        return;
+      }
+
+      showLoader('Verifying Master Security PIN in SQLite...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/reset-credentials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            master_pin: pin,
+            target_user: targetRole,
+            new_username: newUname,
+            new_password: newPwd
+          })
+        });
+        const data = await res.json();
+        hideLoader();
+
+        if (res.ok && data.success) {
+          alert("Account credentials successfully updated via Master Security Key!");
+          forgotPasswordModal.classList.add('hidden');
+        } else {
+          forgotErrorMsg.textContent = data.error || 'Incorrect Master Security PIN! Access Denied.';
+          forgotErrorMsg.classList.remove('hidden');
+        }
+      } catch (e) {
+        hideLoader();
+        forgotErrorMsg.textContent = 'Database server error. Make sure server.py is running.';
+        forgotErrorMsg.classList.remove('hidden');
+      }
+    });
+
+    // ==================== EDIT PROFILE ====================
+    editProfileOption.addEventListener('click', () => {
+      editNameInput.value = displayName;
+      editProfileModal.classList.remove('hidden');
+      dropdownMenu.classList.add('hidden');
+    });
+
+    closeProfileModal.addEventListener('click', () => editProfileModal.classList.add('hidden'));
+
+    function triggerAvatarChange() {
+      document.getElementById('avatarFileInput').click();
+    }
+
+    document.getElementById('avatarFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        profilePicUrl = evt.target.result;
+        userAvatar.src = profilePicUrl;
+        duoSelfImg.src = profilePicUrl;
+        localStorage.setItem('profile_pic_' + currentUser.username, profilePicUrl);
+        updateProfileInDB(displayName, profilePicUrl);
+        updateSentAvatarsAndHistory();
+        hideLoader();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    saveProfileBtn.addEventListener('click', () => {
+      const newName = editNameInput.value.trim();
+      if (newName) {
+        displayName = newName;
+        displayUsername.textContent = displayName;
+        localStorage.setItem('display_name_' + currentUser.username, displayName);
+      }
+
+      const file = editAvatarInput.files[0];
+      if (file) {
+        showLoader();
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          profilePicUrl = evt.target.result;
+          userAvatar.src = profilePicUrl;
+          duoSelfImg.src = profilePicUrl;
+          localStorage.setItem('profile_pic_' + currentUser.username, profilePicUrl);
+          updateProfileInDB(displayName, profilePicUrl);
+          updateSentAvatarsAndHistory();
+          hideLoader();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        updateProfileInDB(displayName, profilePicUrl);
+        updateSentAvatarsAndHistory();
+      }
+      editProfileModal.classList.add('hidden');
+    });
+
+    function updateProfileInDB(name, avatar) {
+      fetch(`${API_BASE}/api/update-profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUser.username, display_name: name, avatar: avatar })
+      }).catch(() => {});
+    }
+
+    function updateSentAvatarsAndHistory() {
+      document.querySelectorAll('.message.sent .msg-avatar').forEach(img => { img.src = profilePicUrl; });
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'sync-profile', avatar: profilePicUrl, name: displayName, username: currentUser.username });
+      }
+    }
+
+    // ==================== PEERJS REAL-TIME COMMUNICATION ====================
+    function initializePeer() {
+      if (peer) peer.destroy();
+      peer = new Peer(currentUser.username, { debug: 1 });
+
+      peer.on('open', () => {
+        connectToPeer();
+        startHeartbeat();
+      });
+
+      peer.on('connection', (conn) => {
+        setupConnection(conn);
+      });
+
+      peer.on('call', async (call) => {
+        const isVideoCall = call.metadata && call.metadata.video;
+        const accept = confirm(`Incoming ${isVideoCall ? 'Video' : 'Voice'} call from ${currentUser.targetPeer.toUpperCase()}. Accept?`);
+        
+        if (!accept) {
+          ensureConnection();
+          if (activeDataConn && activeDataConn.open) {
+            activeDataConn.send({ type: 'call-declined', callType: isVideoCall ? 'video' : 'voice' });
+          }
+          logCallEventToChat(isVideoCall ? 'video' : 'voice', 'declined', 'Call Declined');
+          return;
+        }
+
+        const isVideo = isVideoCall || confirm("Enable video for this call?");
+        isVideoCallActive = isVideo;
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo });
+          setupVideoStreamUI(localStream, null);
+          videoContainer.classList.remove('hidden');
+          callStartTime = new Date();
+
+          call.answer(localStream);
+          activeCall = call;
+          
+          call.on('stream', (remoteStream) => {
+            remoteStreamRef = remoteStream;
+            setupVideoStreamUI(localStream, remoteStreamRef);
+          });
+
+          call.on('close', () => cleanupCall(true));
+        } catch (err) {
+          alert('Could not access camera/microphone.');
+        }
+      });
+
+      peer.on('error', (err) => {
+        console.warn('Peer error:', err);
+        setPartnerStatus(false);
+      });
+    }
+
+    function connectToPeer() {
+      if (!peer || peer.destroyed) return;
+      try {
+        const conn = peer.connect(currentUser.targetPeer, { reliable: true });
+        setupConnection(conn);
+      } catch (e) {
+        setPartnerStatus(false);
+      }
+    }
+
+    function setupConnection(conn) {
+      activeDataConn = conn;
+
+      conn.on('open', () => {
+        lastPingTime = Date.now();
+        setPartnerStatus(true);
+      });
+
+      conn.on('data', (packet) => {
+        lastPingTime = Date.now();
+        setPartnerStatus(true);
+
+        if (packet.type === 'ping') {
+          conn.send({ type: 'pong' });
+          return;
+        }
+        if (packet.type === 'pong') return;
+
+        if (packet.type === 'chat') {
+          appendMessage(packet.data, 'received', packet.id, true);
+          saveMessageToDB(packet.id, packet.data, 'received');
+          saveToLocalStorage(packet.id, packet.data, 'received');
+          conn.send({ type: 'seen-receipt', id: packet.id });
+          markMessageAsSeenInDB(packet.id);
+        } else if (packet.type === 'call-status-event') {
+          appendMessage(packet.data, 'received', packet.id, true);
+          saveMessageToDB(packet.id, packet.data, 'received');
+          saveToLocalStorage(packet.id, packet.data, 'received');
+        } else if (packet.type === 'call-declined') {
+          cleanupCall(false);
+          logCallEventToChat(packet.callType || 'voice', 'declined', 'Call Declined');
+        } else if (packet.type === 'msg-heart-reaction') {
+          const targetMsg = document.getElementById(packet.msgId);
+          if (targetMsg) {
+            const body = targetMsg.querySelector('.msg-body');
+            if (body) spawnMessageHeart(body);
+          }
+        } else if (packet.type === 'love-ping') {
+          triggerHeartsBurst(22);
+        } else if (packet.type === 'seen-receipt') {
+          markMessageAsSeen(packet.id);
+        } else if (packet.type === 'sync-edit') {
+          updateUIMessageContent(packet.id, packet.content);
+          updateLocalStorageContent(packet.id, packet.content);
+        } else if (packet.type === 'sync-delete') {
+          removeUIMessage(packet.id);
+          removeFromLocalStorage(packet.id);
+        } else if (packet.type === 'clear-history') {
+          chatBox.innerHTML = '';
+          localStorage.removeItem('chatHistory_' + currentUser.username);
+        } else if (packet.type === 'sync-profile') {
+          document.querySelectorAll('.message.received .msg-avatar').forEach(img => {
+            img.src = packet.avatar;
+          });
+          duoPartnerImg.src = packet.avatar;
+        } else if (packet.type === 'sync-couple-team') {
+          coupleTeamData = { ...coupleTeamData, ...packet.data };
+          coupleTeamNameText.textContent = coupleTeamData.couple_name;
+          calculateDaysTogether(coupleTeamData.anniversary_date);
+        } else if (packet.type === 'sync-mood') {
+          console.log("Partner updated mood to", packet.mood);
+        }
+      });
+
+      conn.on('close', () => setPartnerStatus(false));
+      conn.on('error', () => setPartnerStatus(false));
+    }
+
+    function startHeartbeat() {
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      lastPingTime = Date.now();
+
+      heartbeatInterval = setInterval(() => {
+        if (activeDataConn && activeDataConn.open) {
+          activeDataConn.send({ type: 'ping' });
+          if (Date.now() - lastPingTime < 5000) {
+            setPartnerStatus(true);
+          } else {
+            setPartnerStatus(false);
+          }
+        } else {
+          setPartnerStatus(false);
+          connectToPeer();
+        }
+      }, 2000);
+    }
+
+    function setPartnerStatus(isOnline) {
+      const partnerName = currentUser ? currentUser.targetPeer.toUpperCase() : 'Partner';
+      if (isOnline) {
+        partnerStatusDot.className = 'status-dot online';
+        partnerStatusText.textContent = `${partnerName}: Online`;
+        coupleTeamLiveStatus.textContent = 'Couple Connected 💕';
+        coupleTeamLiveStatus.style.color = '#10b981';
+      } else {
+        partnerStatusDot.className = 'status-dot offline';
+        partnerStatusText.textContent = `${partnerName}: Offline`;
+        coupleTeamLiveStatus.textContent = '1/2 Active';
+        coupleTeamLiveStatus.style.color = '#fda4af';
+      }
+    }
+
+    function ensureConnection() {
+      if (!activeDataConn || !activeDataConn.open) {
+        connectToPeer();
+      }
+    }
+
+    // ==================== MESSAGING & CHAT PERSISTENCE ====================
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    mediaInput.addEventListener('change', handleMediaSelect);
+    recordAudioBtn.addEventListener('click', toggleAudioRecording);
+
+    // Quick Love Heart button
+    if (quickHeartBtn) {
+      quickHeartBtn.addEventListener('click', () => {
+        const text = messageInput.value.trim();
+        messageInput.value = text ? `${text} ❤️` : '❤️ Love You Forever! 💕';
+        sendMessage();
+        triggerHeartsBurst(16);
+      });
+    }
+
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+      const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      ensureConnection();
+      const messageData = { type: 'text', content: text, time: timeString, avatar: profilePicUrl, status: 'sent' };
+      const packet = { type: 'chat', id: msgId, data: messageData };
+
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send(packet);
+      }
+
+      appendMessage(messageData, 'sent', msgId, true);
+      saveMessageToDB(msgId, messageData, 'sent');
+      saveToLocalStorage(msgId, messageData, 'sent');
+      messageInput.value = '';
+    }
+
+    function handleMediaSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showLoader();
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const fileType = file.type.startsWith('image/') ? 'image' : 'video';
+
+        ensureConnection();
+        const messageData = { type: fileType, content: evt.target.result, time: timeString, avatar: profilePicUrl, status: 'sent' };
+        const packet = { type: 'chat', id: msgId, data: messageData };
+
+        if (activeDataConn && activeDataConn.open) {
+          activeDataConn.send(packet);
+        }
+
+        appendMessage(messageData, 'sent', msgId, true);
+        saveMessageToDB(msgId, messageData, 'sent');
+        saveToLocalStorage(msgId, messageData, 'sent');
+        hideLoader();
+      };
+      reader.readAsDataURL(file);
+      mediaInput.value = '';
+    }
+
+    async function toggleAudioRecording() {
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            showLoader();
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+              const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+              ensureConnection();
+              const messageData = { type: 'audio', content: evt.target.result, time: timeString, avatar: profilePicUrl, status: 'sent' };
+              const packet = { type: 'chat', id: msgId, data: messageData };
+
+              if (activeDataConn && activeDataConn.open) {
+                activeDataConn.send(packet);
+              }
+
+              appendMessage(messageData, 'sent', msgId, true);
+              saveMessageToDB(msgId, messageData, 'sent');
+              saveToLocalStorage(msgId, messageData, 'sent');
+              hideLoader();
+            };
+            reader.readAsDataURL(audioBlob);
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          isRecording = true;
+          recordAudioBtn.classList.add('recording');
+        } catch (err) {
+          alert('Microphone access denied.');
+        }
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        recordAudioBtn.classList.remove('recording');
+      }
+    }
+
+    // ==================== CALL STATUS IN CHAT ====================
+    function logCallEventToChat(callType, status, durationStr) {
+      const msgId = 'call_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+      const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      let subtitle = '';
+      if (status === 'completed') {
+        subtitle = `Call ended • ${durationStr}`;
+      } else if (status === 'missed') {
+        subtitle = 'Missed Call';
+      } else if (status === 'declined') {
+        subtitle = 'Call Declined';
+      }
+
+      const callData = {
+        type: 'call',
+        callType: callType,
+        callStatus: status,
+        content: subtitle,
+        duration: durationStr || '',
+        time: timeString
+      };
+
+      appendMessage(callData, 'sent', msgId, true);
+      saveMessageToDB(msgId, callData, 'sent');
+      saveToLocalStorage(msgId, callData, 'sent');
+
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'call-status-event', id: msgId, data: callData });
+      }
+    }
+
+    function appendMessage(data, senderClass, msgId, save) {
+      if (document.getElementById(msgId)) return;
+
+      const msgDiv = document.createElement('div');
+      msgDiv.id = msgId;
+
+      // Special Rendering for Call & Video Call Status Events in Chat
+      if (data.type === 'call') {
+        const callDiv = document.createElement('div');
+        callDiv.className = `call-card ${data.callType === 'video' ? 'video-call' : 'voice-call'} ${data.callStatus || ''}`;
+
+        const iconBox = document.createElement('div');
+        iconBox.className = 'call-icon-box';
+        if (data.callType === 'video') {
+          iconBox.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>`;
+        } else {
+          iconBox.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>`;
+        }
+
+        const infoBox = document.createElement('div');
+        infoBox.className = 'call-info';
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'call-title';
+        titleSpan.textContent = data.callType === 'video' ? 'Video Call' : 'Voice Call';
+
+        const subSpan = document.createElement('span');
+        subSpan.className = 'call-subtitle';
+        subSpan.textContent = data.content || (data.callStatus === 'missed' ? 'Missed Call' : 'Call ended');
+
+        infoBox.appendChild(titleSpan);
+        infoBox.appendChild(subSpan);
+
+        const timeBadge = document.createElement('span');
+        timeBadge.className = 'call-time-badge';
+        timeBadge.textContent = data.time || '';
+
+        const callBackBtn = document.createElement('button');
+        callBackBtn.className = 'call-back-btn';
+        callBackBtn.innerHTML = (data.callType === 'video'
+          ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Call Back`
+          : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Call Back`
+        );
+        callBackBtn.onclick = () => initiateCall(data.callType === 'video');
+
+        callDiv.appendChild(iconBox);
+        callDiv.appendChild(infoBox);
+        callDiv.appendChild(timeBadge);
+        callDiv.appendChild(callBackBtn);
+
+        msgDiv.className = 'message call-event';
+        msgDiv.appendChild(callDiv);
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        if (save) {
+          saveMessageToDB(msgId, data, senderClass);
+          saveToLocalStorage(msgId, data, senderClass);
+        }
+        return;
+      }
+
+      // Standard Chat Messages (Text, Image, Video, Audio)
+      msgDiv.classList.add('message', senderClass);
+
+      const avatarImg = document.createElement('img');
+      avatarImg.className = 'msg-avatar';
+      avatarImg.src = data.avatar || (senderClass === 'sent' ? profilePicUrl : `https://ui-avatars.com/api/?name=${currentUser.targetPeer}&background=8b5cf6&color=fff&bold=true`);
+
+      const msgWrapper = document.createElement('div');
+      msgWrapper.className = 'msg-wrapper';
+
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'msg-body';
+
+      // Double-click to react with animated love heart
+      contentWrapper.addEventListener('dblclick', () => {
+        spawnMessageHeart(contentWrapper);
+        ensureConnection();
+        if (activeDataConn && activeDataConn.open) {
+          activeDataConn.send({ type: 'msg-heart-reaction', msgId: msgId });
+        }
+      });
+
+      if (data.type === 'text') {
+        const textSpan = document.createElement('span');
+        textSpan.className = 'msg-text';
+        textSpan.textContent = data.content;
+        contentWrapper.appendChild(textSpan);
+      } else if (data.type === 'image') {
+        const img = document.createElement('img');
+        img.src = data.content;
+        contentWrapper.appendChild(img);
+      } else if (data.type === 'video') {
+        const vid = document.createElement('video');
+        vid.src = data.content;
+        vid.controls = true;
+        contentWrapper.appendChild(vid);
+      } else if (data.type === 'audio') {
+        const aud = document.createElement('audio');
+        aud.src = data.content;
+        aud.controls = true;
+        contentWrapper.appendChild(aud);
+      }
+
+      const footerDiv = document.createElement('div');
+      footerDiv.className = 'msg-footer';
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'msg-time';
+      timeSpan.textContent = data.time || '';
+      footerDiv.appendChild(timeSpan);
+
+      if (senderClass === 'sent') {
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'msg-status';
+        statusSpan.id = 'status_' + msgId;
+        statusSpan.textContent = data.status === 'seen' ? '✓✓ Seen' : '✓ Sent';
+        footerDiv.appendChild(statusSpan);
+
+        const actionsDiv = document.createElement('span');
+        actionsDiv.className = 'msg-actions';
+
+        if (data.type === 'text') {
+          const editBtn = document.createElement('button');
+          editBtn.className = 'msg-action-btn edit-msg-btn';
+          editBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>`;
+          editBtn.title = 'Edit Message';
+          editBtn.onclick = (e) => { e.stopPropagation(); handleEdit(msgId); };
+          actionsDiv.appendChild(editBtn);
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'msg-action-btn delete-msg-btn';
+        deleteBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>`;
+        deleteBtn.title = 'Delete Message';
+        deleteBtn.onclick = (e) => { e.stopPropagation(); handleDelete(msgId); };
+        actionsDiv.appendChild(deleteBtn);
+
+        footerDiv.appendChild(actionsDiv);
+      }
+
+      msgWrapper.appendChild(contentWrapper);
+      msgWrapper.appendChild(footerDiv);
+
+      if (senderClass === 'sent') {
+        msgDiv.appendChild(msgWrapper);
+        msgDiv.appendChild(avatarImg);
+      } else {
+        msgDiv.appendChild(avatarImg);
+        msgDiv.appendChild(msgWrapper);
+      }
+
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Save to LocalStorage cache
+    function saveToLocalStorage(id, data, senderClass) {
+      if (!currentUser) return;
+      const key = 'chatHistory_' + currentUser.username;
+      let history = JSON.parse(localStorage.getItem(key) || '[]');
+      if (history.some(item => item.id === id)) return;
+      
+      let storageData = { ...data };
+      if (storageData.type === 'video') storageData.content = '';
+      history.push({ id, data: storageData, senderClass });
+      try {
+        localStorage.setItem(key, JSON.stringify(history));
+      } catch (e) {
+        console.warn('LocalStorage quota limit reached:', e);
+      }
+    }
+
+    // Save to SQLite backend
+    async function saveMessageToDB(id, data, senderClass) {
+      try {
+        await fetch(`${API_BASE}/api/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: id,
+            sender: senderClass === 'sent' ? currentUser.username : currentUser.targetPeer,
+            receiver: senderClass === 'sent' ? currentUser.targetPeer : currentUser.username,
+            type: data.type,
+            content: data.type === 'video' ? '' : data.content,
+            time: data.time,
+            status: data.status || 'sent'
+          })
+        });
+      } catch (e) {}
+    }
+
+    // Load Chat History (Merged SQLite + LocalStorage)
+    async function loadChatHistory() {
+      chatBox.innerHTML = '';
+      const key = 'chatHistory_' + currentUser.username;
+      const localHistory = JSON.parse(localStorage.getItem(key) || '[]');
+      const loadedIds = new Set();
+
+      // 1. Fetch from SQLite Backend
+      try {
+        const res = await fetch(`${API_BASE}/api/messages?user=${currentUser.username}&peer=${currentUser.targetPeer}`);
+        const data = await res.json();
+        if (data.success && data.messages && data.messages.length > 0) {
+          data.messages.forEach(msg => {
+            const senderClass = msg.sender === currentUser.username ? 'sent' : 'received';
+            let msgData = {
+              type: msg.type,
+              content: msg.content,
+              time: msg.time,
+              status: msg.status
+            };
+            if (msg.type === 'call') {
+              msgData.callType = msg.content.toLowerCase().includes('video') ? 'video' : 'voice';
+              msgData.callStatus = msg.content.toLowerCase().includes('missed') ? 'missed' : 
+                                   (msg.content.toLowerCase().includes('declined') ? 'declined' : 'completed');
+            }
+            appendMessage(msgData, senderClass, msg.id, false);
+            saveToLocalStorage(msg.id, msgData, senderClass);
+            loadedIds.add(msg.id);
+          });
+        }
+      } catch (e) {
+        console.warn('Could not load chat history from SQLite, using localStorage cache:', e);
+      }
+
+      // 2. Render any cached localStorage messages not present in SQLite response
+      localHistory.forEach(item => {
+        if (!loadedIds.has(item.id)) {
+          appendMessage(item.data, item.senderClass, item.id, false);
+          loadedIds.add(item.id);
+          saveMessageToDB(item.id, item.data, item.senderClass);
+        }
+      });
+    }
+
+    function markMessageAsSeen(msgId) {
+      const statusSpan = document.getElementById('status_' + msgId);
+      if (statusSpan) statusSpan.textContent = '✓✓ Seen';
+    }
+
+    function markMessageAsSeenInDB(msgId) {
+      fetch(`${API_BASE}/api/messages/seen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: msgId })
+      }).catch(() => {});
+    }
+
+    function handleEdit(msgId) {
+      const msgDiv = document.getElementById(msgId);
+      if (!msgDiv) return;
+      const textSpan = msgDiv.querySelector('.msg-text');
+      if (!textSpan) return;
+
+      const newText = prompt("Edit message:", textSpan.textContent);
+      if (newText === null || newText.trim() === "") return;
+
+      updateUIMessageContent(msgId, newText);
+      updateLocalStorageContent(msgId, newText);
+
+      // Save to SQLite
+      fetch(`${API_BASE}/api/messages/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: msgId, content: newText })
+      }).catch(() => {});
+
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'sync-edit', id: msgId, content: newText });
+      }
+    }
+
+    function handleDelete(msgId) {
+      if (!confirm("Delete this message?")) return;
+      removeUIMessage(msgId);
+      removeFromLocalStorage(msgId);
+
+      // Delete from SQLite
+      fetch(`${API_BASE}/api/messages/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: msgId })
+      }).catch(() => {});
+
+      ensureConnection();
+      if (activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'sync-delete', id: msgId });
+      }
+    }
+
+    function updateUIMessageContent(msgId, newContent) {
+      const msgDiv = document.getElementById(msgId);
+      if (msgDiv) {
+        const textSpan = msgDiv.querySelector('.msg-text');
+        if (textSpan) textSpan.textContent = newContent;
+      }
+    }
+
+    function updateLocalStorageContent(msgId, newContent) {
+      if (!currentUser) return;
+      const key = 'chatHistory_' + currentUser.username;
+      let history = JSON.parse(localStorage.getItem(key) || '[]');
+      const item = history.find(h => h.id === msgId);
+      if (item) {
+        item.data.content = newContent;
+        localStorage.setItem(key, JSON.stringify(history));
+      }
+    }
+
+    function removeUIMessage(msgId) {
+      const msgDiv = document.getElementById(msgId);
+      if (msgDiv) msgDiv.remove();
+    }
+
+    function removeFromLocalStorage(msgId) {
+      if (!currentUser) return;
+      const key = 'chatHistory_' + currentUser.username;
+      let history = JSON.parse(localStorage.getItem(key) || '[]');
+      history = history.filter(h => h.id !== msgId);
+      localStorage.setItem(key, JSON.stringify(history));
+    }
+
+    // Menu options
+    menuBtn.addEventListener('click', () => dropdownMenu.classList.toggle('hidden'));
+    document.addEventListener('click', (e) => {
+      if (!menuBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.add('hidden');
+      }
+    });
+
+    clearChatOption.addEventListener('click', () => {
+      if (confirm("Clear all chat history permanently from SQLite database and local cache?")) {
+        chatBox.innerHTML = '';
+        localStorage.removeItem('chatHistory_' + currentUser.username);
+        fetch(`${API_BASE}/api/messages/clear`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: currentUser.username, peer: currentUser.targetPeer })
+        }).catch(() => {});
+
+        ensureConnection();
+        if (activeDataConn && activeDataConn.open) {
+          activeDataConn.send({ type: 'clear-history' });
+        }
+      }
+      dropdownMenu.classList.add('hidden');
+    });
+
+    callHistoryOption.addEventListener('click', () => {
+      renderCallHistory();
+      callHistoryModal.classList.remove('hidden');
+      dropdownMenu.classList.add('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => callHistoryModal.classList.add('hidden'));
+
+    async function renderCallHistory() {
+      try {
+        const res = await fetch(`${API_BASE}/api/call-logs?user=${currentUser.username}`);
+        const data = await res.json();
+        if (data.success && data.logs && data.logs.length > 0) {
+          callHistoryList.innerHTML = data.logs.map(log => `
+            <div class="call-log-item">
+              <div>
+                <strong>${log.type === 'video' ? 'Video Call' : 'Voice Call'}</strong> with ${log.peer.toUpperCase()}
+                <div class="log-meta">${log.date} at ${log.time}</div>
+              </div>
+              <span class="log-duration">${log.duration}</span>
+            </div>
+          `).join('');
+          return;
+        }
+      } catch (e) {}
+
+      callHistoryList.innerHTML = '<p class="empty-history">No calls logged yet.</p>';
+    }
+
+    // ==================== AUDIO / VIDEO CALLS ====================
+    pipVideoWrapper.addEventListener('click', swapVideoStreams);
+
+    function setupVideoStreamUI(local, remote) {
+      if (isMainRemote) {
+        mainVideo.srcObject = remote || local;
+        pipVideo.srcObject = remote ? local : null;
+        mainVideoLabel.textContent = remote ? currentUser.targetPeer.toUpperCase() : 'You';
+        pipVideoLabel.textContent = remote ? 'You' : '';
+      } else {
+        mainVideo.srcObject = local;
+        pipVideo.srcObject = remote;
+        mainVideoLabel.textContent = 'You';
+        pipVideoLabel.textContent = remote ? currentUser.targetPeer.toUpperCase() : '';
+      }
+    }
+
+    function swapVideoStreams() {
+      isMainRemote = !isMainRemote;
+      setupVideoStreamUI(localStream, remoteStreamRef);
+    }
+
+    audioCallBtn.addEventListener('click', () => initiateCall(false));
+    videoCallBtn.addEventListener('click', () => initiateCall(true));
+    endCallBtn.addEventListener('click', () => cleanupCall(true));
+    toggleMicBtn.addEventListener('click', toggleMuteMic);
+    toggleCamBtn.addEventListener('click', toggleCamera);
+    switchCallModeBtn.addEventListener('click', switchCallMode);
+
+    async function initiateCall(isVideo) {
+      isVideoCallActive = isVideo;
+      updateCallUIState();
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo });
+        setupVideoStreamUI(localStream, null);
+        videoContainer.classList.remove('hidden');
+        callStartTime = new Date();
+
+        activeCall = peer.call(currentUser.targetPeer, localStream, { metadata: { video: isVideo } });
+
+        activeCall.on('stream', (remoteStream) => {
+          remoteStreamRef = remoteStream;
+          setupVideoStreamUI(localStream, remoteStreamRef);
+        });
+
+        activeCall.on('close', () => cleanupCall(true));
+      } catch (err) {
+        alert('Could not access camera/microphone.');
+      }
+    }
+
+    function toggleMuteMic() {
+      if (!localStream) return;
+      isMicMuted = !isMicMuted;
+      localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
+      
+      const micOnIcon = toggleMicBtn.querySelector('.icon-mic-on');
+      const micOffIcon = toggleMicBtn.querySelector('.icon-mic-off');
+      const micLabel = document.getElementById('micBtnText');
+
+      if (isMicMuted) {
+        micOnIcon.classList.add('hidden');
+        micOffIcon.classList.remove('hidden');
+        micLabel.textContent = 'Muted';
+        toggleMicBtn.classList.add('active-off');
+      } else {
+        micOnIcon.classList.remove('hidden');
+        micOffIcon.classList.add('hidden');
+        micLabel.textContent = 'Mic On';
+        toggleMicBtn.classList.remove('active-off');
+      }
+    }
+
+    function toggleCamera() {
+      if (!localStream) return;
+      isCamOff = !isCamOff;
+      localStream.getVideoTracks().forEach(track => track.enabled = !isCamOff);
+
+      const camOnIcon = toggleCamBtn.querySelector('.icon-cam-on');
+      const camOffIcon = toggleCamBtn.querySelector('.icon-cam-off');
+      const camLabel = document.getElementById('camBtnText');
+
+      if (isCamOff) {
+        camOnIcon.classList.add('hidden');
+        camOffIcon.classList.remove('hidden');
+        camLabel.textContent = 'Cam Off';
+        toggleCamBtn.classList.add('active-off');
+      } else {
+        camOnIcon.classList.remove('hidden');
+        camOffIcon.classList.add('hidden');
+        camLabel.textContent = 'Cam On';
+        toggleCamBtn.classList.remove('active-off');
+      }
+    }
+
+    function toggleSpeakerOutput() {
+      isLoudSpeaker = !isLoudSpeaker;
+      const earIcon = document.querySelector('.icon-ear-speaker');
+      const loudIcon = document.querySelector('.icon-loud-speaker');
+      const speakerLabel = document.getElementById('speakerBtnText');
+      const toggleSpeakerBtn = document.getElementById('toggleSpeakerBtn');
+
+      if (isLoudSpeaker) {
+        earIcon.classList.add('hidden');
+        loudIcon.classList.remove('hidden');
+        speakerLabel.textContent = 'Loud Speaker';
+        toggleSpeakerBtn.classList.add('active-highlight');
+      } else {
+        earIcon.classList.remove('hidden');
+        loudIcon.classList.add('hidden');
+        speakerLabel.textContent = 'Ear Speaker';
+        toggleSpeakerBtn.classList.remove('active-highlight');
+      }
+    }
+
+    async function switchCallMode() {
+      if (!activeCall || !localStream) return;
+      isVideoCallActive = !isVideoCallActive;
+      updateCallUIState();
+      
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideoCallActive });
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = newStream;
+        setupVideoStreamUI(localStream, remoteStreamRef);
+
+        const videoTrack = localStream.getVideoTracks()[0];
+        const audioTrack = localStream.getAudioTracks()[0];
+
+        const senders = activeCall.peerConnection.getSenders();
+        senders.forEach(sender => {
+          if (sender.track && sender.track.kind === 'audio' && audioTrack) sender.replaceTrack(audioTrack);
+          if (sender.track && sender.track.kind === 'video' && videoTrack) sender.replaceTrack(videoTrack);
+        });
+      } catch (err) {
+        alert('Could not switch call mode.');
+      }
+    }
+
+    function updateCallUIState() {
+      const modeLabel = document.getElementById('callModeBtnText');
+      if (isVideoCallActive) {
+        modeLabel.textContent = 'To Voice Call';
+      } else {
+        modeLabel.textContent = 'To Video Call';
+      }
+    }
+
+    function cleanupCall(logHistory = false) {
+      if (logHistory && callStartTime && currentUser) {
+        const durationSec = Math.round((new Date() - callStartTime) / 1000);
+        const mins = Math.floor(durationSec / 60);
+        const secs = durationSec % 60;
+        const durStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        const callType = isVideoCallActive ? 'video' : 'voice';
+
+        // Log call to chat timeline!
+        logCallEventToChat(callType, 'completed', durStr);
+
+        fetch(`${API_BASE}/api/call-logs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: currentUser.username,
+            peer: currentUser.targetPeer,
+            type: callType,
+            duration: durStr
+          })
+        }).catch(() => {});
+      }
+      callStartTime = null;
+
+      if (activeCall) {
+        activeCall.close();
+        activeCall = null;
+      }
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+      }
+      mainVideo.srcObject = null;
+      pipVideo.srcObject = null;
+      remoteStreamRef = null;
+      videoContainer.classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(fieldId) {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.type = (field.type === 'password') ? 'text' : 'password';
+      }
+    }
+
+    // Start Animated Love Heart Background
+    initLoveHeartBackground();
+  </script>
+</body>
+</html>

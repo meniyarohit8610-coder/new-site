@@ -1,0 +1,8 @@
+{
+  "host": "0.0.0.0",
+  "port": 8080,
+  "master_pin": "8610",
+  "couple_name": "admin & user",
+  "partner1_name": "admin",
+  "partner2_name": "user"
+}
